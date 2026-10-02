@@ -31,7 +31,7 @@ export default class EventTicker extends Component {
         }))
         .filter((e) => e.timestamp >= today.getTime())
         .sort((a, b) => a.timestamp - b.timestamp)
-        .slice(0, 10); // Sélection des 10 prochains événements
+        .slice(0, 10);
 
       this.events = upcoming;
     } catch (e) {
@@ -49,7 +49,6 @@ export default class EventTicker extends Component {
     }).format(date);
   }
 
-  // Duplication de la liste pour garantir une boucle infinie continue
   get tickerItems() {
     if (!this.events.length) return [];
     return [...this.events, ...this.events];
@@ -61,39 +60,45 @@ export default class EventTicker extends Component {
         .event-ticker-container {
           display: flex;
           align-items: center;
+          width: 100%;
+          box-sizing: border-box;
           background: var(--tertiary-low, #eaf2ff);
           border: 1px solid var(--tertiary-medium, #b3d4ff);
-          border-radius: 10px;
+          border-radius: 14px;
           overflow: hidden;
-          margin: 10px 0 20px 0;
-          height: 42px;
+          margin: 10px 0 16px 0;
+          height: 44px;
           font-size: 0.9rem;
           box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         }
 
         .event-ticker-label {
-          background: var(--tertiary, #0066cc);
+          background: #1976d2;
           color: #ffffff;
           font-weight: 700;
-          padding: 0 14px;
+          padding: 0 16px;
           height: 100%;
           display: flex;
           align-items: center;
           white-space: nowrap;
           z-index: 2;
-          box-shadow: 2px 0 6px rgba(0,0,0,0.1);
+          flex-shrink: 0;
+          box-shadow: 2px 0 6px rgba(0,0,0,0.08);
         }
 
         .event-ticker-wrapper {
           flex: 1;
+          min-width: 0; /* Garantit que la zone s'étire sur toute la largeur restante */
           overflow: hidden;
           position: relative;
           display: flex;
           align-items: center;
+          height: 100%;
         }
 
         .event-ticker-track {
           display: flex;
+          align-items: center;
           gap: 32px;
           white-space: nowrap;
           will-change: transform;
@@ -114,13 +119,13 @@ export default class EventTicker extends Component {
         }
 
         .event-ticker-item:hover .event-ticker-title {
-          color: var(--tertiary);
+          color: #1976d2;
           text-decoration: underline;
         }
 
         .event-ticker-date {
           background: var(--secondary);
-          color: var(--tertiary);
+          color: #1976d2;
           font-weight: 800;
           font-size: 0.75rem;
           padding: 3px 8px;
