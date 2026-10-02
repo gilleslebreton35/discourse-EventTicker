@@ -1,7 +1,7 @@
 import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
-import { inject as service } from "@ember/service";
+import { service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
 
 export default class EventTicker extends Component {
@@ -14,7 +14,6 @@ export default class EventTicker extends Component {
     this.loadEvents();
   }
 
-  // Vérifie si on est sur l'une des vues de la page d'accueil
   get isHomepage() {
     if (!this.router || !this.router.currentRouteName) return false;
     const route = this.router.currentRouteName;
@@ -91,7 +90,7 @@ export default class EventTicker extends Component {
             align-items: center;
             white-space: nowrap;
             position: relative;
-            z-index: 10; /* Empêche le texte défilant de passer par-dessus */
+            z-index: 10;
             flex-shrink: 0;
             box-shadow: 3px 0 8px rgba(0,0,0,0.15);
           }
@@ -154,7 +153,6 @@ export default class EventTicker extends Component {
             100% { transform: translateX(-50%); }
           }
 
-          /* Adaptations pour Mobile */
           @media (max-width: 767px) {
             .event-ticker-container {
               height: 38px;
@@ -165,7 +163,6 @@ export default class EventTicker extends Component {
             .event-ticker-label {
               padding: 0 12px;
             }
-            /* Masque le texte "Prochains événements" sur mobile pour gagner de la place, ne garde que l'icône */
             .event-ticker-label-text {
               display: none;
             }
