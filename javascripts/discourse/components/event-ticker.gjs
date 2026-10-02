@@ -1,15 +1,24 @@
 import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
+import { inject as service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
 
 export default class EventTicker extends Component {
+  @service router;
   @tracked events = [];
   @tracked isLoading = true;
 
   constructor() {
     super(...arguments);
     this.loadEvents();
+  }
+
+  // Vérifie si on est sur l'une des vues de la page d'accueil
+  get isHomepage() {
+    if (!this.router || !this.router.currentRouteName) return false;
+    const route = this.router.currentRouteName;
+    return route === "discovery.latest" || route === "discovery.categories" || route === "discovery.top";
   }
 
   @action
@@ -55,117 +64,135 @@ export default class EventTicker extends Component {
   }
 
   <template>
-    {{#if this.events.length}}
-      <style>
-        .event-ticker-container {
-          display: flex;
-          align-items: center;
-          width: 100%;
-          box-sizing: border-box;
-          background: var(--tertiary-low, #eaf2ff);
-          border: 1px solid var(--tertiary-medium, #b3d4ff);
-          border-radius: 14px;
-          overflow: hidden;
-          margin: 10px 0 16px 0;
-          height: 44px;
-          font-size: 0.9rem;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-        }
-
-        .event-ticker-label {
-          background: #1976d2;
-          color: #ffffff;
-          font-weight: 700;
-          padding: 0 16px;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          white-space: nowrap;
-          z-index: 2;
-          flex-shrink: 0;
-          box-shadow: 2px 0 6px rgba(0,0,0,0.08);
-        }
-
-        .event-ticker-wrapper {
-          flex: 1;
-          min-width: 0; /* Garantit que la zone s'étire sur toute la largeur restante */
-          overflow: hidden;
-          position: relative;
-          display: flex;
-          align-items: center;
-          height: 100%;
-        }
-
-        .event-ticker-track {
-          display: flex;
-          align-items: center;
-          gap: 32px;
-          white-space: nowrap;
-          will-change: transform;
-          animation: ticker-scroll 35s linear infinite;
-        }
-
-        .event-ticker-container:hover .event-ticker-track {
-          animation-play-state: paused;
-        }
-
-        .event-ticker-item {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          color: var(--primary);
-          text-decoration: none !important;
-          font-weight: 600;
-        }
-
-        .event-ticker-item:hover .event-ticker-title {
-          color: #1976d2;
-          text-decoration: underline;
-        }
-
-        .event-ticker-date {
-          background: var(--secondary);
-          color: #1976d2;
-          font-weight: 800;
-          font-size: 0.75rem;
-          padding: 3px 8px;
-          border-radius: 12px;
-          border: 1px solid var(--tertiary-medium);
-          text-transform: capitalize;
-        }
-
-        .event-ticker-separator {
-          color: var(--primary-low-mid);
-          margin-left: 10px;
-        }
-
-        @keyframes ticker-scroll {
-          0% {
-            transform: translateX(0);
+    {{#if this.isHomepage}}
+      {{#if this.events.length}}
+        <style>
+          .event-ticker-container {
+            display: flex;
+            align-items: stretch;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            background: var(--tertiary-low, #eaf2ff);
+            border: 1px solid var(--tertiary-medium, #b3d4ff);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            height: 44px;
+            font-size: 0.9rem;
           }
-          100% {
-            transform: translateX(-50%);
+
+          .event-ticker-label {
+            background: #1976d2;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            position: relative;
+            z-index: 10; /* Empêche le texte défilant de passer par-dessus */
+            flex-shrink: 0;
+            box-shadow: 3px 0 8px rgba(0,0,0,0.15);
           }
-        }
-      </style>
 
-      <div class="event-ticker-container">
-        <div class="event-ticker-label">
-          📢 Prochains événements
-        </div>
+          .event-ticker-wrapper {
+            flex-grow: 1;
+            min-width: 0;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+          }
 
-        <div class="event-ticker-wrapper">
-          <div class="event-ticker-track">
-            {{#each this.tickerItems as |event|}}
-              <a href={{event.url}} class="event-ticker-item">
-                <span class="event-ticker-date">{{this.formatDate event.startDate}}</span>
-                <span class="event-ticker-title">{{event.title}}</span>
-                <span class="event-ticker-separator">•</span>
-              </a>
-            {{/each}}
+          .event-ticker-track {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            white-space: nowrap;
+            padding-left: 20px;
+            will-change: transform;
+            animation: ticker-scroll 35s linear infinite;
+          }
+
+          .event-ticker-container:hover .event-ticker-track {
+            animation-play-state: paused;
+          }
+
+          .event-ticker-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none !important;
+            font-weight: 600;
+          }
+
+          .event-ticker-item:hover .event-ticker-title {
+            color: #1976d2;
+            text-decoration: underline;
+          }
+
+          .event-ticker-date {
+            background: var(--secondary);
+            color: #1976d2;
+            font-weight: 800;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            border: 1px solid var(--tertiary-medium);
+            text-transform: capitalize;
+          }
+
+          .event-ticker-separator {
+            color: var(--primary-low-mid);
+            margin-left: 10px;
+          }
+
+          @keyframes ticker-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+
+          /* Adaptations pour Mobile */
+          @media (max-width: 767px) {
+            .event-ticker-container {
+              height: 38px;
+              font-size: 0.85rem;
+              margin-bottom: 12px;
+              border-radius: 6px;
+            }
+            .event-ticker-label {
+              padding: 0 12px;
+            }
+            /* Masque le texte "Prochains événements" sur mobile pour gagner de la place, ne garde que l'icône */
+            .event-ticker-label-text {
+              display: none;
+            }
+            .event-ticker-track {
+              gap: 20px;
+            }
+          }
+        </style>
+
+        <div class="event-ticker-container">
+          <div class="event-ticker-label">
+            📢 <span class="event-ticker-label-text" style="margin-left: 6px;">Prochains événements</span>
+          </div>
+
+          <div class="event-ticker-wrapper">
+            <div class="event-ticker-track">
+              {{#each this.tickerItems as |event|}}
+                <a href={{event.url}} class="event-ticker-item">
+                  <span class="event-ticker-date">{{this.formatDate event.startDate}}</span>
+                  <span class="event-ticker-title">{{event.title}}</span>
+                  <span class="event-ticker-separator">•</span>
+                </a>
+              {{/each}}
+            </div>
           </div>
         </div>
-      </div>
+      {{/if}}
     {{/if}}
   </template>
 }
