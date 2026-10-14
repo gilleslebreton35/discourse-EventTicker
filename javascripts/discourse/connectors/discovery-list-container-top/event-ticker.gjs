@@ -17,7 +17,11 @@ export default class EventTicker extends Component {
   get isHomepage() {
     if (!this.router || !this.router.currentRouteName) return false;
     const route = this.router.currentRouteName;
-    return route === "discovery.latest" || route === "discovery.categories" || route === "discovery.top";
+    return (
+      route === "discovery.latest" ||
+      route === "discovery.categories" ||
+      route === "discovery.top"
+    );
   }
 
   @action
@@ -25,7 +29,7 @@ export default class EventTicker extends Component {
     try {
       const rawData = await ajax("/tablejeu/map.json");
       const dataList = Array.isArray(rawData) ? rawData : (rawData.tablejeu || []);
-      
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -34,6 +38,14 @@ export default class EventTicker extends Component {
           id: item.topic_id,
           url: item.url,
           title: item.title,
+          // Récupération de l'image selon le nom du champ dans votre JSON
+          imageUrl:
+            item.image_url ||
+            item.game_image ||
+            item.image ||
+            item.thumbnail_url ||
+            item.cover_url ||
+            null,
           startDate: new Date(item.start_at),
           timestamp: item.start_at ? new Date(item.start_at).getTime() : 0,
         }))
@@ -132,6 +144,16 @@ export default class EventTicker extends Component {
             text-decoration: underline;
           }
 
+          .event-ticker-img {
+            width: 28px;
+            height: 28px;
+            object-fit: cover;
+            border-radius: 4px;
+            flex-shrink: 0;
+            border: 1px solid var(--tertiary-medium, #b3d4ff);
+            background: var(--secondary);
+          }
+
           .event-ticker-date {
             background: var(--secondary);
             color: #1976d2;
@@ -169,6 +191,10 @@ export default class EventTicker extends Component {
             .event-ticker-track {
               gap: 20px;
             }
+            .event-ticker-img {
+              width: 24px;
+              height: 24px;
+            }
           }
         </style>
 
@@ -181,6 +207,9 @@ export default class EventTicker extends Component {
             <div class="event-ticker-track">
               {{#each this.tickerItems as |event|}}
                 <a href={{event.url}} class="event-ticker-item">
+                  {{#if event.imageUrl}}
+                    <img src={{event.imageUrl}} alt={{event.title}} class="event-ticker-img" loading="lazy" />
+                  {{/if}}
                   <span class="event-ticker-date">{{this.formatDate event.startDate}}</span>
                   <span class="event-ticker-title">{{event.title}}</span>
                   <span class="event-ticker-separator">•</span>
