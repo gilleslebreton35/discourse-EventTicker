@@ -38,7 +38,7 @@ export default class EventTicker extends Component {
           id: item.topic_id,
           url: item.url,
           title: item.title,
-          // Récupération de l'image selon le nom du champ dans votre JSON
+          // Récupération automatique de l'image selon les clés les plus courantes
           imageUrl:
             item.image_url ||
             item.game_image ||
@@ -87,10 +87,14 @@ export default class EventTicker extends Component {
             background: var(--tertiary-low, #eaf2ff);
             border: 1px solid var(--tertiary-medium, #b3d4ff);
             border-radius: 8px;
-            overflow: hidden;
+            /* Coupe ce qui dépasse à gauche/droite, mais laisse le zoom sortir en haut/bas */
+            overflow-x: clip;
+            overflow-y: visible;
             margin-bottom: 16px;
             height: 44px;
             font-size: 0.9rem;
+            position: relative;
+            z-index: 20;
           }
 
           .event-ticker-label {
@@ -102,15 +106,17 @@ export default class EventTicker extends Component {
             align-items: center;
             white-space: nowrap;
             position: relative;
-            z-index: 10;
+            z-index: 35;
             flex-shrink: 0;
+            border-radius: 7px 0 0 7px;
             box-shadow: 3px 0 8px rgba(0,0,0,0.15);
           }
 
           .event-ticker-wrapper {
             flex-grow: 1;
             min-width: 0;
-            overflow: hidden;
+            overflow-x: clip;
+            overflow-y: visible;
             position: relative;
             display: flex;
             align-items: center;
@@ -119,7 +125,7 @@ export default class EventTicker extends Component {
           .event-ticker-track {
             display: flex;
             align-items: center;
-            gap: 32px;
+            gap: 20px;
             white-space: nowrap;
             padding-left: 20px;
             will-change: transform;
@@ -137,11 +143,26 @@ export default class EventTicker extends Component {
             color: var(--primary);
             text-decoration: none !important;
             font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 8px;
+            position: relative;
+            z-index: 1;
+            transition:
+              transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1),
+              background-color 0.2s ease,
+              box-shadow 0.2s ease;
+          }
+
+          /* Agrandissement du bloc complet (texte + date) au survol */
+          .event-ticker-item:hover {
+            transform: scale(1.18);
+            background: var(--secondary, #ffffff);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+            z-index: 30;
           }
 
           .event-ticker-item:hover .event-ticker-title {
             color: #1976d2;
-            text-decoration: underline;
           }
 
           .event-ticker-img {
@@ -152,6 +173,17 @@ export default class EventTicker extends Component {
             flex-shrink: 0;
             border: 1px solid var(--tertiary-medium, #b3d4ff);
             background: var(--secondary);
+            /* S'agrandit vers la gauche pour ne pas recouvrir la date */
+            transform-origin: right center;
+            transition:
+              transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1),
+              box-shadow 0.2s ease;
+          }
+
+          /* Zoom supplémentaire sur l'image au survol */
+          .event-ticker-item:hover .event-ticker-img {
+            transform: scale(1.8);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
           }
 
           .event-ticker-date {
@@ -167,7 +199,7 @@ export default class EventTicker extends Component {
 
           .event-ticker-separator {
             color: var(--primary-low-mid);
-            margin-left: 10px;
+            user-select: none;
           }
 
           @keyframes ticker-scroll {
@@ -184,12 +216,13 @@ export default class EventTicker extends Component {
             }
             .event-ticker-label {
               padding: 0 12px;
+              border-radius: 5px 0 0 5px;
             }
             .event-ticker-label-text {
               display: none;
             }
             .event-ticker-track {
-              gap: 20px;
+              gap: 14px;
             }
             .event-ticker-img {
               width: 24px;
@@ -212,8 +245,8 @@ export default class EventTicker extends Component {
                   {{/if}}
                   <span class="event-ticker-date">{{this.formatDate event.startDate}}</span>
                   <span class="event-ticker-title">{{event.title}}</span>
-                  <span class="event-ticker-separator">•</span>
                 </a>
+                <span class="event-ticker-separator">•</span>
               {{/each}}
             </div>
           </div>
